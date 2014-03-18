@@ -31,3 +31,7 @@ end
 group :cloud_files do
   gem 'fog'
 end
+
+group :azure do
+  gem 'azure'
+end
