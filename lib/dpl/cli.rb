@@ -7,7 +7,7 @@ module DPL
       new(args).run
     end
 
-    OPTION_PATTERN = /\A--([a-z][a-z_\-]*)(?:=(.+))?\z/
+    OPTION_PATTERN = /\A--([a-z][a-z_\.\-]*)(?:=(.+))?\z/
     attr_accessor :options, :fold_count
 
     def initialize(*args)
@@ -15,11 +15,20 @@ module DPL
       args.flatten.each do |arg|
         next options.update(arg) if arg.is_a? Hash
         die("invalid option %p" % arg) unless match = OPTION_PATTERN.match(arg)
-        key = match[1].tr('-', '_').to_sym
-        if options.include? key
-          options[key] = Array(options[key]) << match[2]
+        key1, key2 = match[1].tr('-', '_').split(/\./,2).map(&:to_sym)
+        if options.include? key1
+          if key2
+            options[key1][key2] = Array(options[key1][key2]) << match[2]
+          else
+            options[key1] = Array(options[key1]) << match[2]
+          end
         else
-          options[key] = match[2] || true
+          if key2
+            options[key1] ||= {}
+            options[key1][key2] = match[2] || true
+          else
+            options[key1] = match[2] || true
+          end
         end
       end
 

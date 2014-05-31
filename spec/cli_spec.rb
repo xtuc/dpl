@@ -9,6 +9,11 @@ describe DPL::CLI do
     example { described_class.new("--app")                  .options[:app].should be == true                   }
     example { described_class.new("--app=foo", "--app=bar") .options[:app].should be == ['foo', 'bar']         }
 
+    example do
+      described_class.new("--newrelic.app_name=foo", "--newrelic.api_key=012345abcd").options[:newrelic].
+        should be == {:app_name=>"foo", :api_key=>["012345abcd"]}
+    end
+
     example "error handling" do
       $stderr.should_receive(:puts).with('invalid option "app"')
       expect { described_class.new("app") }.to raise_error(SystemExit)
