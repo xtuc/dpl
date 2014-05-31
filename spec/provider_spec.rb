@@ -60,25 +60,47 @@ describe DPL::Provider do
   end
 
   describe :deploy do
-    before do
-      provider.should_receive(:check_auth)
-      provider.should_receive(:check_app)
-      provider.should_receive(:push_app)
-      provider.should_receive(:run).with("foo")
-      provider.should_receive(:run).with("bar")
+    context 'without newrelic key' do
+      before do
+        provider.should_receive(:check_auth)
+        provider.should_receive(:check_app)
+        provider.should_receive(:push_app)
+        provider.should_receive(:run).with("foo")
+        provider.should_receive(:run).with("bar")
+      end
+
+      example "needs key" do
+        provider.should_receive(:remove_key)
+        provider.should_receive(:create_key)
+        provider.should_receive(:setup_key)
+        provider.should_receive(:setup_git_ssh)
+        provider.deploy
+      end
+
+      example "does not need key" do
+        provider.stub(:needs_key? => false)
+        provider.deploy
+      end
     end
 
-    example "needs key" do
-      provider.should_receive(:remove_key)
-      provider.should_receive(:create_key)
-      provider.should_receive(:setup_key)
-      provider.should_receive(:setup_git_ssh)
-      provider.deploy
-    end
+    context 'with newrelic key' do
+      let(:provider) { example_provider.new(DummyContext.new, :app => 'example', :key_name => 'foo', :run => ["foo", "bar"], :newrelic => {:api_key => 'foo', :app_name => 'bar'}) }
 
-    example "does not need key" do
-      provider.stub(:needs_key? => false)
-      provider.deploy
+      before do
+        provider.should_receive(:check_auth)
+        provider.should_receive(:check_app)
+        provider.should_receive(:push_app)
+        provider.should_receive(:run).with("foo")
+        provider.should_receive(:run).with("bar")
+      end
+
+      example "with newrelic opt" do
+        require 'dpl/newrelic_client'
+
+        provider.stub(:needs_key? => false)
+        ::DPL::NewRelicClient.stub(:notify).and_return(nil)
+        provider.deploy
+      end
     end
   end
 

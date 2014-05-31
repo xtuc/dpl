@@ -1,5 +1,6 @@
 require 'dpl/error'
 require 'fileutils'
+require 'faraday'
 
 module DPL
   class Provider
@@ -103,6 +104,12 @@ module DPL
 
       context.fold("Deploying application") { push_app }
 
+      if newrelic_enabled?
+        require 'dpl/newrelic_client'
+
+        NewRelicClient.notify(newrelic_opts)
+      end
+
       Array(options[:run]).each do |command|
         if command == 'restart'
           context.fold("Restarting application") { restart }
@@ -171,6 +178,15 @@ module DPL
 
     def error(message)
       raise Error, message
+    end
+
+    private
+    def newrelic_enabled?
+      newrelic_opts
+    end
+
+    def newrelic_opts
+      options[:newrelic]
     end
   end
 end
