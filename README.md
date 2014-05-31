@@ -314,3 +314,18 @@ For accounts using two factor authentication, you have to use an oauth token as 
 
     dpl --provider=hackage --username=<username> --password=<password>
 
+## New Relic deployment notification
+You can notify New Relic of your deployment.
+[Options](https://github.com/newrelic/newrelic_api/#deployment-notifications)
+associated with this feature are prefixed by `newrelic.`.
+
+Authentication with New Relic requires either `api_key` or `license_key`,
+and the request requires exactly one of either `app_name` or `application_id`.
+
+This feature can be used in conjunction with any provider.
+
+### Examples:
+
+    dpl --provider=engineyard --api-key=<api-key> --app=<application> --migrate=`rake db:migrate` \
+      --newrelic.api_key=abcdef0123456789 --newrelic.application_id=615a9203ef1
+
