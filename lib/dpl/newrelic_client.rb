@@ -6,7 +6,7 @@ module DPL
 
     def self.notify(opts)
       if (!opts[:app_name] && !opts[:application_id]) || (opts[:app_name] && opts[:application_id])
-        puts "Exactly one of app_name or application_id is required.\nNot notifying New Relic"
+        log "Exactly one of app_name or application_id is required.\nNot notifying New Relic"
         return
       end
 
@@ -29,9 +29,9 @@ module DPL
       end
 
       if response.success?
-        puts "Notified New Relic"
+        log "Notified New Relic"
       else
-        puts "Notification to New Relic failed.\nStatus: #{response.status}"
+        log "Notification to New Relic failed.\nStatus: #{response.status}"
       end
     end
   end
