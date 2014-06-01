@@ -15,21 +15,10 @@ module DPL
       args.flatten.each do |arg|
         next options.update(arg) if arg.is_a? Hash
         die("invalid option %p" % arg) unless match = OPTION_PATTERN.match(arg)
-        key1, key2 = match[1].tr('-', '_').split(/\./,2).map(&:to_sym)
-        if options.include? key1
-          if key2
-            options[key1][key2] = Array(options[key1][key2]) << match[2]
-          else
-            options[key1] = Array(options[key1]) << match[2]
-          end
-        else
-          if key2
-            options[key1] ||= {}
-            options[key1][key2] = match[2] || true
-          else
-            options[key1] = match[2] || true
-          end
-        end
+
+        keys = match[1].tr('-', '_').split(/\./).map(&:to_sym)
+        value = match[2]
+        assign_value(options, keys, value)
       end
 
       self.fold_count = 0
@@ -66,6 +55,39 @@ module DPL
     def die(message)
       $stderr.puts(message)
       exit 1
+    end
+
+    private
+
+    # given a hash, keys array = [:key1, :key2, :key3, …],
+    # and a value, do:
+    # hash[:key1][:key2][:key3]… = value
+    def assign_value(hash, keys, value)
+      sarrogate = hash
+
+      while keys.length > 0 do
+        next_key = keys.shift
+        if sarrogate.include? next_key
+          # we have seen this key before
+          if keys.length > 0
+            # go deeper
+            sarrogate = sarrogate[next_key]
+          else
+            # there is no other key, so push value to the end of array
+            sarrogate[next_key] = Array(sarrogate[next_key]) << value
+          end
+        else
+          # we haven't seen this key before
+          if keys.length > 0
+            # go deeper
+            sarrogate[next_key] ||= {}
+            sarrogate = sarrogate[next_key]
+          else
+            # assign value
+            sarrogate[next_key] = value || true
+          end
+        end
+      end
     end
   end
 end

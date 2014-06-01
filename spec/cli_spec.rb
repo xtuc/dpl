@@ -10,8 +10,13 @@ describe DPL::CLI do
     example { described_class.new("--app=foo", "--app=bar") .options[:app].should be == ['foo', 'bar']         }
 
     example do
-      described_class.new("--newrelic.app_name=foo", "--newrelic.api_key=012345abcd").options[:newrelic].
-        should be == {:app_name=>"foo", :api_key=>["012345abcd"]}
+      described_class.new("--foo.bar=foo", "--foo.baz=012345abcd").options[:foo].
+        should be == {:bar=>"foo", :baz=>"012345abcd"}
+    end
+
+    example do
+      described_class.new("--foo.bar=foo", "--foo.bar=012345abcd").options[:foo].
+        should be == {:bar=>["foo", "012345abcd"]}
     end
 
     example "error handling" do
