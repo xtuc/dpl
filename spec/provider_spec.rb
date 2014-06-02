@@ -84,7 +84,12 @@ describe DPL::Provider do
     end
 
     context 'with newrelic key' do
-      let(:provider) { example_provider.new(DummyContext.new, :app => 'example', :key_name => 'foo', :run => ["foo", "bar"], :newrelic => {:api_key => 'foo', :app_name => 'bar'}) }
+      let(:provider) {
+        example_provider.new(
+          DummyContext.new, :app => 'example', :key_name => 'foo', :run => ["foo", "bar"],
+          :notify => [:new_relic => {:api_key => 'foo', :app_name => 'bar'}]
+        )
+      }
 
       before do
         provider.should_receive(:check_auth)
@@ -95,10 +100,8 @@ describe DPL::Provider do
       end
 
       example "with newrelic opt" do
-        require 'dpl/newrelic_client'
-
         provider.stub(:needs_key? => false)
-        ::DPL::NewRelicClient.stub(:notify).and_return(nil)
+        ::DPL::Notifier::NewRelic.any_instance.stub(:notify).and_return(nil)
         provider.deploy
       end
     end

@@ -1,4 +1,5 @@
 require 'dpl/error'
+require 'dpl/notifier'
 require 'fileutils'
 require 'faraday'
 
@@ -104,10 +105,8 @@ module DPL
 
       context.fold("Deploying application") { push_app }
 
-      if newrelic_enabled?
-        require 'dpl/newrelic_client'
-
-        NewRelicClient.notify(newrelic_opts)
+      if options.has_key? :notify
+        Notifier.notify(options[:notify])
       end
 
       Array(options[:run]).each do |command|
@@ -178,15 +177,6 @@ module DPL
 
     def error(message)
       raise Error, message
-    end
-
-    private
-    def newrelic_enabled?
-      newrelic_opts
-    end
-
-    def newrelic_opts
-      options[:newrelic]
     end
   end
 end
