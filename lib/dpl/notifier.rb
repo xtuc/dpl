@@ -1,5 +1,6 @@
 require 'dpl/error'
 require 'faraday'
+require 'active_support/inflector'
 
 module DPL
   class Notifier
