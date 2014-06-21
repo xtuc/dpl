@@ -100,8 +100,10 @@ describe DPL::Provider do
       end
 
       example "with newrelic opt" do
+        env = Faraday::Env.new
+        env[:status] = 200
         expect(provider).to receive(:needs_key?).at_least(:once).and_return(false)
-        expect_any_instance_of(::DPL::Notifier::NewRelic).to receive(:notify).and_return(nil)
+        expect_any_instance_of(Faraday::Connection).to receive(:post).and_return( Faraday::Response.new(env) )
         provider.deploy
       end
     end
