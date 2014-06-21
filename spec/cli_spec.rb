@@ -19,6 +19,11 @@ describe DPL::CLI do
         to eql({:bar=>["foo", "012345abcd"]})
     end
 
+    example do
+      expect(described_class.new("--foo.bar.baz=foo", "--foo.bar.foo=012345abcd").options[:foo]).
+        to eql({:bar=>{:baz => "foo", :foo => "012345abcd" }})
+    end
+
     example "error handling" do
       expect($stderr).to receive(:puts).with('invalid option "app"')
       expect { described_class.new("app") }.to raise_error(SystemExit)
