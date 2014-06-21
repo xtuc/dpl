@@ -63,7 +63,7 @@ As a rule of thumb, you should switch to the Git strategy if you run into issues
 
 #### Examples:
 
-    dpl --provider=heroku --api-key=`heroku auth:token`
+    dpl --provider=heroku --api-key='heroku auth:token'
     dpl --provider=heroku --strategy=git --username=<username> --password=<password>  --app=<application>
 
 
@@ -106,7 +106,7 @@ As a rule of thumb, you should switch to the Git strategy if you run into issues
 
     dpl --provider=engineyard --api-key=<api-key>
     dpl --provider=engineyard --username=<username> --password=<password> --environment=staging
-    dpl --provider=engineyard --api-key=<api-key> --app=<application> --migrate=`rake db:migrate`
+    dpl --provider=engineyard --api-key=<api-key> --app=<application> --migrate='rake db:migrate'
 
 ### Openshift:
 
@@ -132,7 +132,7 @@ As a rule of thumb, you should switch to the Git strategy if you run into issues
 
 #### Examples:
 
-    dpl --provider=cloudcontrol --email=<email> --password<password> --deployment=`APP_NAME/DEP_NAME`
+    dpl --provider=cloudcontrol --email=<email> --password<password> --deployment='APP_NAME/DEP_NAME'
 
 ### RubyGems:
 
@@ -361,5 +361,5 @@ This feature can be used in conjunction with any provider.
 
 ### Examples:
 
-    dpl --provider=engineyard --api-key=<api-key> --app=<application> --migrate=`rake db:migrate` \
+    dpl --provider=engineyard --api-key=<api-key> --app=<application> --migrate='rake db:migrate' \
       --notify.newrelic.api_key=abcdef0123456789 --notify.newrelic.application_id=615a9203ef1
