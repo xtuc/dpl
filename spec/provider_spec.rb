@@ -60,25 +60,50 @@ describe DPL::Provider do
   end
 
   describe "#deploy" do
-    before do
-      expect(provider).to receive(:check_auth)
-      expect(provider).to receive(:check_app)
-      expect(provider).to receive(:push_app)
-      expect(provider).to receive(:run).with("foo")
-      expect(provider).to receive(:run).with("bar")
+    context "without New Relic key" do
+      before do
+        expect(provider).to receive(:check_auth)
+        expect(provider).to receive(:check_app)
+        expect(provider).to receive(:push_app)
+        expect(provider).to receive(:run).with("foo")
+        expect(provider).to receive(:run).with("bar")
+      end
+
+      example "needs key" do
+        expect(provider).to receive(:remove_key)
+        expect(provider).to receive(:create_key)
+        expect(provider).to receive(:setup_key)
+        expect(provider).to receive(:setup_git_ssh)
+        provider.deploy
+      end
+
+      example "does not need key" do
+        allow(provider).to receive_messages(:needs_key? => false)
+        provider.deploy
+      end
     end
 
-    example "needs key" do
-      expect(provider).to receive(:remove_key)
-      expect(provider).to receive(:create_key)
-      expect(provider).to receive(:setup_key)
-      expect(provider).to receive(:setup_git_ssh)
-      provider.deploy
-    end
+    context 'with newrelic key' do
+      let(:provider) {
+        example_provider.new(
+          DummyContext.new, :app => 'example', :key_name => 'foo', :run => ["foo", "bar"],
+          :notify => [:new_relic => {:api_key => 'foo', :app_name => 'bar'}]
+        )
+      }
 
-    example "does not need key" do
-      allow(provider).to receive_messages(:needs_key? => false)
-      provider.deploy
+      before do
+        expect(provider).to receive(:check_auth)
+        expect(provider).to receive(:check_app)
+        expect(provider).to receive(:push_app)
+        expect(provider).to receive(:run).with("foo")
+        expect(provider).to receive(:run).with("bar")
+      end
+
+      example "with newrelic opt" do
+        expect(provider).to receive(:needs_key?).at_least(:once).and_return(false)
+        expect_any_instance_of(::DPL::Notifier::NewRelic).to receive(:notify).and_return(nil)
+        provider.deploy
+      end
     end
   end
 
