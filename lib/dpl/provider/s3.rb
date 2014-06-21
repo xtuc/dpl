@@ -35,7 +35,13 @@ module DPL
         Dir.chdir(options.fetch(:local_dir, Dir.pwd)) do
           Dir.glob("**/*") do |filename|
             content_type = MIME::Types.type_for(filename).first.to_s
-            api.buckets[option(:bucket)].objects.create(upload_path(filename), File.read(filename), :content_type => content_type) unless File.directory?(filename)
+            opts         = { :content_type => content_type }.merge(encoding_option_for(filename))
+            opts[:cache_control] = options[:cache_control] if options[:cache_control]
+            opts[:acl]           = options[:acl] if options[:acl] 
+            opts[:expires]       = options[:expires] if options[:expires]
+            unless File.directory?(filename)
+              api.buckets[option(:bucket)].objects.create(upload_path(filename), File.read(filename), opts)
+            end
           end
         end
       end
@@ -50,6 +56,28 @@ module DPL
         raise Error, "Oops, It looks like you tried to write to a bucket that isn't yours or doesn't exist yet. Please create the bucket before trying to write to it."
       end
 
+      private
+      def detect_encoding?
+        options[:detect_encoding]
+      end
+
+      def encoding_for(path)
+        file_cmd_output = `file #{path}`
+        case file_cmd_output
+        when /gzip compressed/
+          'gzip'
+        when /compress'd/
+          'compress'
+        end
+      end
+
+      def encoding_option_for(path)
+        if detect_encoding? && encoding_for(path)
+          {:content_encoding => encoding_for(path)}
+        else
+          {}
+        end
+      end
     end
   end
 end

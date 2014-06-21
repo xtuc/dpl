@@ -6,7 +6,7 @@ describe DPL::Provider::Hackage do
     described_class.new(DummyContext.new, :username => 'FooUser', :password => 'bar')
   end
 
-  describe :check_auth do
+  describe "#check_auth" do
     it 'should require username' do
       provider.options.update(:username => nil)
       expect {
@@ -22,25 +22,25 @@ describe DPL::Provider::Hackage do
     end
   end
 
-  describe :check_app do
+  describe "#check_app" do
     it 'calls cabal' do
-      provider.context.should_receive(:shell).with("cabal check").and_return(true)
+      expect(provider.context).to receive(:shell).with("cabal check").and_return(true)
       provider.check_app
     end
 
     it 'fails when cabal complains' do
-      provider.context.should_receive(:shell).with("cabal check").and_return(false)
+      expect(provider.context).to receive(:shell).with("cabal check").and_return(false)
       expect {
         provider.check_app
       }.to raise_error(DPL::Error)
     end
   end
 
-  describe :push_app do
+  describe "#push_app" do
     example do
-      provider.context.should_receive(:shell).with("cabal sdist").and_return(true)
-      Dir.should_receive(:glob).and_yield('dist/package-0.1.2.3.tar.gz')
-      provider.context.should_receive(:shell).with("cabal upload --username=FooUser --password=bar dist/package-0.1.2.3.tar.gz")
+      expect(provider.context).to receive(:shell).with("cabal sdist").and_return(true)
+      expect(Dir).to receive(:glob).and_yield('dist/package-0.1.2.3.tar.gz')
+      expect(provider.context).to receive(:shell).with("cabal upload --username=FooUser --password=bar dist/package-0.1.2.3.tar.gz")
       provider.push_app
     end
   end

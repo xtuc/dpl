@@ -9,6 +9,7 @@ end
 
 group :openshift do
   gem 'rhc'
+  gem 'httpclient'
 end
 
 group :appfog do
@@ -34,4 +35,8 @@ end
 
 group :ninefold do
   gem 'ninefold'
+end
+
+group :gcs do
+  gem 'gstore'
 end
