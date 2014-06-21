@@ -10,13 +10,13 @@ describe DPL::CLI do
     example { expect(described_class.new("--app=foo", "--app=bar") .options[:app]).to eq(['foo', 'bar'])         }
 
     example do
-      described_class.new("--foo.bar=foo", "--foo.baz=012345abcd").options[:foo].
-        should be == {:bar=>"foo", :baz=>"012345abcd"}
+      expect(described_class.new("--foo.bar=foo", "--foo.baz=012345abcd").options[:foo]).
+        to eql({:bar=>"foo", :baz=>"012345abcd"})
     end
 
     example do
-      described_class.new("--foo.bar=foo", "--foo.bar=012345abcd").options[:foo].
-        should be == {:bar=>["foo", "012345abcd"]}
+      expect(described_class.new("--foo.bar=foo", "--foo.bar=012345abcd").options[:foo]).
+        to eql({:bar=>["foo", "012345abcd"]})
     end
 
     example "error handling" do
