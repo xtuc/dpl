@@ -22,6 +22,8 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'simplecov'
   s.add_development_dependency 'json'
   s.add_dependency 'activesupport'
+  s.add_dependency 'faraday', '~> 0.9.0'
+  s.add_dependency 'faraday_middleware', '~> 0.9.1'
 
   # prereleases from Travis CI
   if ENV['CI']
