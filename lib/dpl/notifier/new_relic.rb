@@ -27,7 +27,7 @@ module DPL
           req.headers['x-api-key']     = opts[:api_key]     if opts[:api_key]
           req.headers['x-license-key'] = opts[:license_key] if opts[:license_key]
 
-          req.body = payload.join('&')
+          req.body = payload.join('&').tap {|x| puts "payload: #{payload}"}
         end
 
         if response.success?
