@@ -12,14 +12,17 @@ module DPL
 
     def initialize(*args)
       options = {}
+      print "args: #{args}"
       args.flatten.each do |arg|
         next options.update(arg) if arg.is_a? Hash
         die("invalid option %p" % arg) unless match = OPTION_PATTERN.match(arg)
 
         keys = match[1].tr('-', '_').split(/\./).map(&:to_sym)
         value = match[2]
+        print "keys: #{keys}\nvalue: #{value}"
         assign_value(options, keys, value)
       end
+      print "options: #{options}"
 
       self.fold_count = 0
       self.options    = default_options.merge(options)
