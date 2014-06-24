@@ -107,7 +107,7 @@ module DPL
 
       context.fold("Deploying application") { push_app }
 
-      context.fold("options: #{options.inspect}")
+      context.fold("debug info") { puts "options: #{options.inspect}" }
       if options.has_key? :notify
         Notifier.notify(options[:notify])
       end
