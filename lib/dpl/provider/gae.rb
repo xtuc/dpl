@@ -1,45 +1,40 @@
-require 'digest/sha1'
 require 'open-uri'
+require 'rubygems/package'
+require 'zlib'
 
 module DPL
   class Provider
     class GAE < Provider
       experimental 'Google App Engine'
 
-      # https://developers.google.com/appengine/downloads
-      GAE_VERSION='1.9.17'
-      GAE_ZIP_FILE="google_appengine_#{GAE_VERSION}.zip"
-      SHA1SUM='eec50aaf922d3b21623fda1b90e199c3ffa9e16e'
-      BASE_DIR=Dir.pwd
-      GAE_DIR=File.join(BASE_DIR, 'google_appengine')
-      APPCFG_BIN=File.join(GAE_DIR, 'appcfg.py')
+      BASE="https://dl.google.com/dl/cloudsdk/channels/rapid/"
+      NAME="google-cloud-sdk"
+      EXT=".tar.gz"
+      GCLOUD=File.join(Dir.home, NAME, "bin", "gcloud")
 
       def self.install_sdk
-        requires 'rubyzip', :load => 'zip'
-        $stderr.puts "Setting up Google App Engine SDK"
+        # If the gcloud executable exists, assume everything is fine.
+        if File.exists? GCLOUD
+          return
+        end
 
-        Dir.chdir(BASE_DIR) do
-          unless File.exists? GAE_ZIP_FILE
-            $stderr.puts "Downloading Google App Engine SDK"
-            File.open(GAE_ZIP_FILE, "wb") do |dest|
-              open("https://storage.googleapis.com/appengine-sdks/featured/#{GAE_ZIP_FILE}", "rb") do |src|
-                dest.write(src.read)
-              end
-            end
-          end
-          sha1sum = Digest::SHA1.hexdigest(File.read(GAE_ZIP_FILE))
-          unless sha1sum == SHA1SUM
-            raise "Checksum did not match for #{GAE_ZIP_FILE}"
-          end
+        $stderr.puts "Downloading Google Cloud SDK"
 
-          unless File.directory? 'google_appengine'
-            $stderr.puts "Extracting Google App Engine SDK archive"
-            Zip::File.open(GAE_ZIP_FILE) do |file|
-              file.each do |entry|
-                entry.extract entry.name
-              end
+        Gem::Package::TarReader.new(Zlib::GzipReader.open(open(BASE + NAME + EXT, "rb"))).each do |entry|
+          target = File.join(Dir.home, entry.full_name)
+          if entry.directory?
+            FileUtils.mkdir_p target, :mode => entry.header.mode
+          elsif entry.file?
+            File.open target, "wb" do |f|
+              f.print entry.read
             end
+            FileUtils.chmod entry.header.mode, target
           end
+        end
+
+        # Bootstrap the Google Cloud SDK.
+        unless context.shell("CLOUDSDK_CORE_DISABLE_PROMPTS=1 #{Dir.home}/#{NAME}/bin/bootstrapping/install.py --usage-reporting=false --command-completion=false --path-update=false --additional-components=preview")
+          raise Error, 'Could not install Google Cloud SDK!'
         end
       end
 
@@ -50,19 +45,45 @@ module DPL
       end
 
       def check_auth
+        command = GCLOUD + " -q --verbosity debug auth activate-service-account --key-file #{keyfile}"
+        unless context.shell(command)
+          raise Error, 'Failed to authenticate!'
+        end
       end
 
-      def app_dir
-        options[:app_dir] || context.env['TRAVIS_BUILD_DIR'] || Dir.pwd
+      def keyfile
+        options[:keyfile] || context.env['GOOGLECLOUDKEYFILE'] || 'service-account.json'
+      end
+
+      def project
+        options[:project] || context.env['GOOGLECLOUDPROJECT'] || context.env['CLOUDSDK_CORE_PROJECT'] || File.dirname(context.env['TRAVIS_REPO_SLUG'] || '')
+      end
+
+      def version
+        options[:version] || ""
+      end
+
+      def config
+        options[:config] || 'app.yaml'
+      end
+
+      def default
+        options[:default]
+      end
+
+      def verbosity
+        options[:verbosity] || "warning"
       end
 
       def push_app
-        puts "About to call push_app in with #{self.class} provider"
-        puts "APPCFG_BIN: #{APPCFG_BIN}"
-        unless File.exist?(APPCFG_BIN)
-          puts "APPCFG_BIN does not exist"
-        end
-        context.shell "#{APPCFG_BIN} --oauth2_refresh_token=#{options[:oauth_refresh_token]} update #{app_dir}"
+        command = GCLOUD
+        command << " --quiet"
+        command << " --verbosity \"#{verbosity}\""
+        command << " --project \"#{project}\""
+        command << " preview app deploy \"#{config}\""
+        command << " --version \"#{version}\""
+        command << (default ? " --set-default" : "")
+        context.shell(command)
       end
     end
   end
