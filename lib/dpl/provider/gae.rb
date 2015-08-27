@@ -13,8 +13,9 @@ module DPL
       GCLOUD=File.join(Dir.home, NAME, "bin", "gcloud")
 
       def self.install_sdk
+        puts "install_sdk (early) Is it there? " + (File.exist?(GCLOUD) ? "Yep :)" : "Nope :(")
         # If the gcloud executable exists, assume everything is fine.
-        if File.exists? GCLOUD
+        if File.exist?(GCLOUD)
           return
         end
 
@@ -32,8 +33,12 @@ module DPL
           end
         end
 
+        puts "install_sdk (before actually installing) Is it there? " + (File.exist?(GCLOUD) ? "Yep :)" : "Nope :(")
+
         # Bootstrap the Google Cloud SDK.
         context.shell("CLOUDSDK_CORE_DISABLE_PROMPTS=1 #{Dir.home}/#{NAME}/bin/bootstrapping/install.py --usage-reporting=false --command-completion=false --path-update=false --additional-components=preview")
+
+        puts "install_sdk (late) Is it there? " + (File.exist?(GCLOUD) ? "Yep :)" : "Nope :(")
       end
 
       install_sdk
@@ -42,7 +47,12 @@ module DPL
         false
       end
 
+      def cleanup
+        puts "cleanup Is it there? " + (File.exist?(GCLOUD) ? "Yep :)" : "Nope :(")
+      end
+
       def check_auth
+        puts "check_auth (late) Is it there? " + (File.exist?(GCLOUD) ? "Yep :)" : "Nope :(")
         context.shell(GCLOUD + " -q --verbosity debug auth activate-service-account --key-file #{keyfile}")
       end
 
@@ -71,6 +81,7 @@ module DPL
       end
 
       def push_app
+        puts "push_app (late) Is it there? " + (File.exist?(GCLOUD) ? "Yep :)" : "Nope :(")
         command = GCLOUD
         command << " --quiet"
         command << " --verbosity \"#{verbosity}\""
