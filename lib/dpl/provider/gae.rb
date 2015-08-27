@@ -33,9 +33,7 @@ module DPL
         end
 
         # Bootstrap the Google Cloud SDK.
-        unless context.shell("CLOUDSDK_CORE_DISABLE_PROMPTS=1 #{Dir.home}/#{NAME}/bin/bootstrapping/install.py --usage-reporting=false --command-completion=false --path-update=false --additional-components=preview")
-          raise Error, 'Could not install Google Cloud SDK!'
-        end
+        context.shell("CLOUDSDK_CORE_DISABLE_PROMPTS=1 #{Dir.home}/#{NAME}/bin/bootstrapping/install.py --usage-reporting=false --command-completion=false --path-update=false --additional-components=preview")
       end
 
       install_sdk
@@ -45,10 +43,7 @@ module DPL
       end
 
       def check_auth
-        command = GCLOUD + " -q --verbosity debug auth activate-service-account --key-file #{keyfile}"
-        unless context.shell(command)
-          raise Error, 'Failed to authenticate!'
-        end
+        context.shell(GCLOUD + " -q --verbosity debug auth activate-service-account --key-file #{keyfile}")
       end
 
       def keyfile
