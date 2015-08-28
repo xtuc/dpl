@@ -11,7 +11,6 @@ describe DPL::Provider::Anynines do
 
   describe "#check_auth" do
     example do
-      expect(provider.context).to receive(:shell).with('rm temp.deb')
       expect(provider.context).to receive(:shell).with('./cf api https://api.de.a9s.eu')
       expect(provider.context).to receive(:shell).with('./cf login --u mallomar --p myreallyawesomepassword --o myorg --s outer')
       provider.check_auth
