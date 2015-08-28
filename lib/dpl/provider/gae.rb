@@ -24,7 +24,7 @@ module DPL
         status = wait_thr.value
 
         if !status.success?
-          raise ["FAILED: #{cmd}", errors, output].join("\n")
+          error ["FAILED: #{cmd}", errors, output].join("\n")
         end
       end
 
