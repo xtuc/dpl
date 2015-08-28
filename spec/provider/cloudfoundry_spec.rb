@@ -13,7 +13,7 @@ describe DPL::Provider::CloudFoundry do
 
   describe "#check_auth" do
     example do
-      expect(provider.context).to receive(:shell).with('curl -sSL -o- http://go-cli.s3-website-us-east-1.amazonaws.com/releases/latest/cf-cli_amd64.deb | tar xf - data.tar.xz && tar xf data.tar.xz --strip-components 3 ./usr/bin/cf; rm -f data.tar.xz')
+      expect(provider.context).to receive(:shell).with('curl -sSL -O http://go-cli.s3-website-us-east-1.amazonaws.com/releases/latest/cf-cli_amd64.deb; ar x cf-cli_amd64.deb && tar xf data.tar.xz --strip-components 3 ./usr/bin/cf; rm -f data.tar.xz')
       expect(provider.context).to receive(:shell).with('./cf api api.run.awesome.io --skip-ssl-validation')
       expect(provider.context).to receive(:shell).with('./cf login --u mallomar --p myreallyawesomepassword --o myorg --s outer')
       provider.check_auth

@@ -3,7 +3,7 @@ module DPL
     class CloudFoundry < Provider
 
       def initial_go_tools_install
-        context.shell 'curl -sSL -o- http://go-cli.s3-website-us-east-1.amazonaws.com/releases/latest/cf-cli_amd64.deb | tar xf - data.tar.xz && tar xf data.tar.xz --strip-components 3 ./usr/bin/cf; rm -f data.tar.xz'
+        context.shell 'curl -sSL -O http://go-cli.s3-website-us-east-1.amazonaws.com/releases/latest/cf-cli_amd64.deb; ar x cf-cli_amd64.deb && tar xf data.tar.xz --strip-components 3 ./usr/bin/cf; rm -f data.tar.xz'
       end
 
       def check_auth
