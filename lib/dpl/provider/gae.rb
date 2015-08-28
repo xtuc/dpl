@@ -1,6 +1,4 @@
-require 'open-uri'
-require 'rubygems/package'
-require 'zlib'
+require 'open3'
 
 module DPL
   class Provider
@@ -12,33 +10,43 @@ module DPL
       EXT=".tar.gz"
       GCLOUD=File.join(Dir.home, NAME, "bin", "gcloud")
 
+
+      def self.run_command_and_wait_for_file(cmd, f, &block)
+        stdin, stdout, stderr, wait_thr = Open3.popen3(cmd)
+        while !File.exists?(f) do
+          $stdout.write '.'
+          sleep 1
+        end
+        $stdout.puts ''
+
+        errors = stderr.read
+        output = stdout.read
+        status = wait_thr.value
+
+        if !status.success?
+          raise ["FAILED: #{cmd}", errors, output].join("\n")
+        end
+      end
+
       def self.install_sdk
-        puts "install_sdk (early) Is it there? " + (File.exist?(GCLOUD) ? "Yep :)" : "Nope :(")
         # If the gcloud executable exists, assume everything is fine.
         if File.exist?(GCLOUD)
           return
         end
 
         $stderr.puts "Downloading Google Cloud SDK"
+        context.shell("wget #{BASE + NAME + EXT}")
 
-        Gem::Package::TarReader.new(Zlib::GzipReader.open(open(BASE + NAME + EXT, "rb"))).each do |entry|
-          target = File.join(Dir.home, entry.full_name)
-          if entry.directory?
-            FileUtils.mkdir_p target, :mode => entry.header.mode
-          elsif entry.file?
-            File.open target, "wb" do |f|
-              f.print entry.read
-            end
-            FileUtils.chmod entry.header.mode, target
-          end
-        end
-
-        puts "install_sdk (before actually installing) Is it there? " + (File.exist?(GCLOUD) ? "Yep :)" : "Nope :(")
+        $stderr.puts "Extracting Google Cloud SDK"
+        cmd = "tar xvf #{NAME + EXT} -C #{Dir.home}" # let tar decide which compression algorithm to use
+        bootstrap_script = "#{Dir.home}/#{NAME}/bin/bootstrapping/install.py"
+        run_command_and_wait_for_file(cmd, bootstrap_script)
 
         # Bootstrap the Google Cloud SDK.
-        context.shell("CLOUDSDK_CORE_DISABLE_PROMPTS=1 #{Dir.home}/#{NAME}/bin/bootstrapping/install.py --usage-reporting=false --command-completion=false --path-update=false --additional-components=preview")
+        cmd = "env CLOUDSDK_CORE_DISABLE_PROMPTS=1 #{bootstrap_script} --usage-reporting=false --command-completion=false --path-update=false --additional-components=preview"
 
-        puts "install_sdk (late) Is it there? " + (File.exist?(GCLOUD) ? "Yep :)" : "Nope :(")
+        $stderr.puts "Bootstrap Google Cloud SDK"
+        run_command_and_wait_for_file(cmd, GCLOUD)
       end
 
       install_sdk
@@ -47,12 +55,7 @@ module DPL
         false
       end
 
-      def cleanup
-        puts "cleanup Is it there? " + (File.exist?(GCLOUD) ? "Yep :)" : "Nope :(")
-      end
-
       def check_auth
-        puts "check_auth (late) Is it there? " + (File.exist?(GCLOUD) ? "Yep :)" : "Nope :(")
         context.shell(GCLOUD + " -q --verbosity debug auth activate-service-account --key-file #{keyfile}")
       end
 
@@ -81,7 +84,6 @@ module DPL
       end
 
       def push_app
-        puts "push_app (late) Is it there? " + (File.exist?(GCLOUD) ? "Yep :)" : "Nope :(")
         command = GCLOUD
         command << " --quiet"
         command << " --verbosity \"#{verbosity}\""
