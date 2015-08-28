@@ -1,3 +1,6 @@
+require 'open-uri'
+require 'rubygems/package'
+require 'zlib'
 require 'open3'
 
 module DPL
@@ -34,13 +37,21 @@ module DPL
           return
         end
 
-        $stderr.puts "Downloading Google Cloud SDK"
-        context.shell("wget #{BASE + NAME + EXT}")
+        $stderr.puts "Downloading and extracting Google Cloud SDK"
 
-        $stderr.puts "Extracting Google Cloud SDK"
-        cmd = "tar xvf #{NAME + EXT} -C #{Dir.home}" # let tar decide which compression algorithm to use
+        Gem::Package::TarReader.new(Zlib::GzipReader.open(open(BASE + NAME + EXT, "rb"))).each do |entry|
+          target = File.join(Dir.home, entry.full_name)
+          if entry.directory?
+            FileUtils.mkdir_p target, :mode => entry.header.mode
+          elsif entry.file?
+            File.open target, "wb" do |f|
+              f.print entry.read
+            end
+            FileUtils.chmod entry.header.mode, target
+          end
+        end
+
         bootstrap_script = "#{Dir.home}/#{NAME}/bin/bootstrapping/install.py"
-        run_command_and_wait_for_file(cmd, bootstrap_script)
 
         # Bootstrap the Google Cloud SDK.
         cmd = "env CLOUDSDK_CORE_DISABLE_PROMPTS=1 #{bootstrap_script} --usage-reporting=false --command-completion=false --path-update=false --additional-components=preview"
