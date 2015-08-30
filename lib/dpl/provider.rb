@@ -43,6 +43,7 @@ module DPL
     autoload :Script,           'dpl/provider/script'
     autoload :TestFairy,        'dpl/provider/testfairy'
     autoload :Transifex,        'dpl/provider/transifex'
+    autoload :TravisCi,         'dpl/provider/travis_ci'
 
 
     def self.new(context, options)
