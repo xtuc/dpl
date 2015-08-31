@@ -51,7 +51,7 @@ module DPL
             content_type = MIME::Types.type_for(filename).first.to_s
             opts         = { :content_type => content_type }.merge(encoding_option_for(filename))
             opts[:cache_control] = get_option_value_by_filename(options[:cache_control], filename) if options[:cache_control]
-            opts[:acl]           = options[:acl] if options[:acl]
+            opts[:acl]           = options[:acl].gsub(/_/, '-') if options[:acl]
             opts[:expires]       = get_option_value_by_filename(options[:expires], filename) if options[:expires]
             unless File.directory?(filename)
               log "uploading %p" % filename

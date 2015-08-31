@@ -147,7 +147,7 @@ describe DPL::Provider::S3 do
     example "Sets ACL" do
       provider.options.update(:acl => "public_read")
       expect(Dir).to receive(:glob).and_yield(__FILE__)
-      expect_any_instance_of(Aws::S3::Object).to receive(:upload_file).with(anything(), hash_including(:acl => "public_read"))
+      expect_any_instance_of(Aws::S3::Object).to receive(:upload_file).with(anything(), hash_including(:acl => "public-read"))
       provider.push_app
     end
 
