@@ -34,7 +34,6 @@ module DPL
           region:      options[:region] || 'us-east-1',
           credentials: ::Aws::Credentials.new(access_key_id, secret_access_key)
         }
-        @s3_options[:endpoint] = endpoint if options[:endpoint]
         @s3_options
       end
 
@@ -90,14 +89,6 @@ module DPL
           {:content_encoding => encoding_for(path)}
         else
           {}
-        end
-      end
-
-      def endpoint
-        if !options[:endpoint].start_with?('http')
-          "https://#{options[:endpoint]}"
-        else
-          options[:endpoint]
         end
       end
 

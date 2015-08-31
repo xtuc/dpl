@@ -24,29 +24,6 @@ describe DPL::Provider::S3 do
         expect(options[:region]).to eq(region)
       end
     end
-
-    context 'without endpoint' do
-      example do
-        options = provider.s3_options
-        expect(options[:endpoint]).to be_nil
-      end
-    end
-
-    context 'with endpoint without protocol' do
-      example do
-        provider.options.update(:endpoint => 's3test.com.s3-website-us-west-2.amazonaws.com')
-        options = provider.s3_options
-        expect(options[:endpoint]).to eq('https://s3test.com.s3-website-us-west-2.amazonaws.com')
-      end
-    end
-
-    context 'with endpoint with protocol' do
-      example do
-        provider.options.update(:endpoint => 'http://s3test.com.s3-website-us-west-2.amazonaws.com')
-        options = provider.s3_options
-        expect(options[:endpoint]).to eq('http://s3test.com.s3-website-us-west-2.amazonaws.com')
-      end
-    end
   end
 end
 
