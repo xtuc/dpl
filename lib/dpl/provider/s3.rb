@@ -6,8 +6,6 @@ module DPL
       requires 'aws-sdk'
       requires 'mime-types'
 
-      attr_reader :s3_options
-
       def api
         @api ||= ::Aws::S3::Resource.new(s3_options)
       end
@@ -29,12 +27,10 @@ module DPL
       end
 
       def s3_options
-        return @s3_options if @s3_options
-        @s3_options = {
+        {
           region:      options[:region] || 'us-east-1',
           credentials: ::Aws::Credentials.new(access_key_id, secret_access_key)
         }
-        @s3_options
       end
 
       def check_auth
