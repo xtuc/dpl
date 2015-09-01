@@ -36,7 +36,7 @@ describe DPL::Provider::S3 do
       example do
         provider.options.update(:endpoint => 's3test.com.s3-website-us-west-2.amazonaws.com')
         options = provider.s3_options
-        expect(options[:endpoint]).to eq('http://s3test.com.s3-website-us-west-2.amazonaws.com')
+        expect(options[:endpoint]).to eq('http://s3-website-us-west-2.amazonaws.com')
       end
     end
 
@@ -44,7 +44,7 @@ describe DPL::Provider::S3 do
       example do
         provider.options.update(:endpoint => 'https://s3test.com.s3-website-us-west-2.amazonaws.com')
         options = provider.s3_options
-        expect(options[:endpoint]).to eq('https://s3test.com.s3-website-us-west-2.amazonaws.com')
+        expect(options[:endpoint]).to eq('https://s3-website-us-west-2.amazonaws.com')
       end
     end
   end

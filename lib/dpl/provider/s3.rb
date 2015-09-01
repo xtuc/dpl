@@ -98,10 +98,15 @@ module DPL
         uri = URI.parse(options[:endpoint])
         case uri
         when URI::HTTP, URI::HTTPS
-          uri.to_s
+          uri.class.build(host: last_3_domains_of(uri.host)).to_s
         else
-          URI::HTTP.build(host: uri.to_s).to_s
+          # URI::Generic, which returns 'nil' for '#host'
+          URI::HTTP.build(host: last_3_domains_of(uri.to_s)).to_s
         end
+      end
+
+      def last_3_domains_of(str)
+        str.split('.').last(3).join('.')
       end
 
       def get_option_value_by_filename(option_values, filename)
