@@ -73,6 +73,8 @@ module DPL
             }
           )
         end
+      rescue => e
+        log "Failed to push\ns3_options: #{s3_options}"
       end
 
       def deploy
