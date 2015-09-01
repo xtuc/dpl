@@ -1,4 +1,5 @@
 require 'json'
+require 'uri'
 
 module DPL
   class Provider
@@ -94,10 +95,12 @@ module DPL
       end
 
       def endpoint
-        if !options[:endpoint].start_with?('http')
-          "https://#{options[:endpoint]}"
+        uri = URI.parse(options[:endpoint])
+        case uri
+        when URI::HTTP, URI::HTTPS
+          uri.to_s
         else
-          options[:endpoint]
+          URI::HTTP.build(host: uri.to_s).to_s
         end
       end
 
