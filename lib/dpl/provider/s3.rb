@@ -42,6 +42,7 @@ module DPL
       end
 
       def push_app
+        raise ::Aws::S3::Errors::SignatureDoesNotMatch
         glob_args = ["**/*"]
         glob_args << File::FNM_DOTMATCH if options[:dot_match]
         Dir.chdir(options.fetch(:local_dir, Dir.pwd)) do
@@ -67,6 +68,10 @@ module DPL
             }
           )
         end
+      rescue ::Aws::S3::MultipartUploadError, ::Aws::S3::Errors::SignatureDoesNotMatch => e
+        warn "Encountered an error while uploading with AWS SDK v2. Retrying with v1."
+        v1_provider = S3V1.new(context, options)
+        v1_provider.push_app
       end
 
       def deploy
