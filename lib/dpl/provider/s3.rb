@@ -42,7 +42,7 @@ module DPL
       end
 
       def push_app
-        raise ::Aws::S3::Errors::SignatureDoesNotMatch
+        raise ::Aws::S3::MultipartUploadError.new("failed", [])
         glob_args = ["**/*"]
         glob_args << File::FNM_DOTMATCH if options[:dot_match]
         Dir.chdir(options.fetch(:local_dir, Dir.pwd)) do
