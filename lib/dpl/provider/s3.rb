@@ -71,7 +71,7 @@ module DPL
       rescue ::Aws::S3::MultipartUploadError, ::Aws::S3::Errors::SignatureDoesNotMatch => e
         warn "Encountered an error while uploading with AWS SDK v2. Retrying with v1."
         v1_provider = S3V1.new(context, options)
-        v1_provider.push_app
+        v1_provider.deploy
       end
 
       def deploy
